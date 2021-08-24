@@ -7,7 +7,21 @@ pipeline {
         dockerImage = ''
         dockerContainer=''
 	}
- 
+    post {
+      failure {
+        updateGitlabCommitStatus name: 'build', state: 'failed'
+      }
+      success {
+        updateGitlabCommitStatus name: 'build', state: 'success'
+      }
+    }
+    options {
+      gitLabConnection('gitlab-connection')
+      gitlabBuilds(builds: ['build', 'test'])
+    }
+    triggers {
+        gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
+    }
     stages {
         stage('Clone git repo') {
             steps {
@@ -15,22 +29,26 @@ pipeline {
                 git credentialsId: 'git-credentials', url: 'git@gitlab.com:movie-analyst20/movie-analyst-ui.git'
             }
         }
-        stage('Build docker image'){
+        stage('build'){
             steps {
+                updateGitlabCommitStatus name: 'build', state: 'pending'
                 echo 'Building docker image'
                 script{
                     dockerImage = docker.build image+"_test"
                 }
+                updateGitlabCommitStatus name: 'build', state: 'success'
             }
         }
-        stage("Run the docker container"){
+        stage('test'){
             steps{
-                echo 'Runing the container'
+                updateGitlabCommitStatus name: 'test', state: 'pending'
+                echo 'Runing the tests'
                 script{
                     dockerContainer = dockerImage.run('-p 80:8000 --name server')
                 }
+                updateGitlabCommitStatus name: 'test', state: 'success'
             }
-        } 
+        }
     }
 }
         stage('Build docker image'){
