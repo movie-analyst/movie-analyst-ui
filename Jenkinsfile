@@ -22,8 +22,15 @@ pipeline {
                     dockerImage = docker.build image+"_test"
                 }
             }
-
         }
+        stage("Run the docker container"){
+            steps{
+                echo 'Runing the container'
+                script{
+                    dockerContainer = dockerImage.run('-p 80:8000 --name server')
+                }
+            }
+        } 
     }
 }
         stage('Build docker image'){
