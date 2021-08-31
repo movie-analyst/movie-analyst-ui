@@ -27,7 +27,7 @@ pipeline {
                 stage('Retag images'){
                     when { anyOf {branch 'qa' ; branch 'staging';} }
                     steps {
-                        sh 'docker pull ' + image + 'develop'
+                        sh 'docker pull ' + image + ':develop'
                         sh 'docker image tag ' + image  + ':develop '+  image +':' + env.BRANCH_NAME
                         script{
                             dockerImage = docker.image( image +':' + env.BRANCH_NAME)
