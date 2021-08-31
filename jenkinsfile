@@ -1,37 +1,68 @@
-stage('Build') {
-    // The first milestone step starts tracking concurrent build order
-    milestone()
-    node {
-        echo "Building"
-        
-    }
-}
-
-// This locked resource contains both Test stages as a single concurrency Unit.
-// Only 1 concurrent build is allowed to utilize the test resources at a time.
-// Newer builds are pulled off the queue first. When a build reaches the
-// milestone at the end of the lock, all jobs started prior to the current
-// build that are still waiting for the lock will be aborted
-lock(resource: 'myResource', inversePrecedence: true){
-    node('test') {
-        stage('Unit Tests') {
-            echo "Unit Tests"
+pipeline {
+    agent any
+    environment {
+		GIT_CREDENTIALS = credentials ('git-credentials')
+        DOCKER_CREDENTIALS = 'docker-credentials'
+        image = "juancastaneda20/movie-analyst-ui"
+        dockerImage = ''
+        dockerContainer=''
+	}
+    stages {
+        stage('Clone git repo') {
+            steps {
+                echo 'Cloning the git repository'
+                git credentialsId: 'git-credentials', url: 'git@gitlab.com:movie-analyst20/movie-analyst-ui.git'
+            }
         }
-        stage('System Tests') {
-            echo "System Tests"
+        stage('build'){
+            parallel{
+                stage('Build develop and master image'){
+                    when { anyOf { branch 'master'; branch 'develop';} }
+                    steps {
+                        script{
+                            dockerImage = docker.build image + ':' + env.BRANCH_NAME
+                        }
+                    } 
+                }
+                stage('Retag images'){
+                    when { anyOf {branch 'qa' ; branch 'staging';} }
+                    steps {
+                        sh 'docker pull ' + image + ':develop'
+                        sh 'docker image tag ' + image  + ':develop '+  image +':' + env.BRANCH_NAME
+                        script{
+                            dockerImage = docker.image( image +':' + env.BRANCH_NAME)
+                        }
+                    }  
+                }
+            }
         }
-    }
-    milestone()
-}
-
-// The Deploy stage does not limit concurrency but requires manual input
-// from a user. Several builds might reach this step waiting for input.
-// When a user promotes a specific build all preceding builds are aborted,
-// ensuring that the latest code is always deployed.
-stage('Deploy') {
-    input "Deploy?"
-    milestone()
-    node {
-        echo "Deploying"
+        stage('test'){
+            when { branch 'develop' }
+            steps {
+                script{
+                    sh 'docker run --name test_container_ui --entrypoint /bin/sh ' + image + ':develop -c "ls"'
+                    sh 'docker rm test_container_ui'
+                } 
+            }
+        }
+        stage('Push the image') {
+            when{anyOf { branch 'master'; branch 'develop'; branch 'qa'; branch 'staging';} } 
+            steps { 
+                echo 'Pushing image'
+                script { 
+                    docker.withRegistry( '', DOCKER_CREDENTIALS) { 
+                        dockerImage.push() 
+                    }
+                    sh 'docker rmi ' + image + ':' + env.BRANCH_NAME 
+                } 
+            }
+        }
+        stage ('Start CD') {
+            steps {
+                build job: 'CD ui pipeline', parameters: [
+                string(name: 'branch', value: env.BRANCH_NAME)
+                ]
+            }
+        }
     }
 }
