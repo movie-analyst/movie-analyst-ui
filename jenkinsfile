@@ -28,7 +28,7 @@ pipeline {
                     when { branch 'master'}
                     steps {
                         script{
-                            dockerImage = docker.build image + ':' + env.BRANCH_NAME + env.TAG_NAME
+                            dockerImage = docker.build image + ':' + env.BRANCH_NAME + env.GIT_COMMIT
                         }
                     } 
                 }
@@ -61,15 +61,30 @@ pipeline {
                     docker.withRegistry( '', DOCKER_CREDENTIALS) { 
                         dockerImage.push() 
                     }
-                    sh 'docker rmi ' + image + ':' + env.BRANCH_NAME 
                 } 
+            }
+        }
+        stage ('Remove the images'){
+            parallel{
+                stage('Remove master image'){
+                    when{ branch 'master'}
+                    steps{
+                         sh 'docker rmi ' + image + ':' + env.BRANCH_NAME + env.GIT_COMMIT
+                    }
+                }
+                stage('Remove images'){
+                    when{ anyOf { branch 'develop'; branch 'qa'; branch 'staging';} }
+                    steps{
+                         sh 'docker rmi ' + image + ':' + env.BRANCH_NAME 
+                    }
+                }
             }
         }
         stage ('Start CD') {
             when { branch 'master' }
             steps {
                 build job: 'CD ui pipeline', parameters: [
-                string(name: 'version', value: env.TAG_NAME)
+                string(name: 'version', value: env.GIT_COMMIT)
                 ]
             }
         }
