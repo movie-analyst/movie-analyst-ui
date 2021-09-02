@@ -16,16 +16,24 @@ pipeline {
         }
         stage('build'){
             parallel{
-                stage('Build develop and master image'){
-                    when { anyOf { branch 'master'; branch 'develop';} }
+                stage('Build develop image'){
+                    when { branch 'develop' }
                     steps {
                         script{
                             dockerImage = docker.build image + ':' + env.BRANCH_NAME
                         }
                     } 
                 }
+                stage('Build master image'){
+                    when { branch 'master'}
+                    steps {
+                        script{
+                            dockerImage = docker.build image + ':' + env.BRANCH_NAME + env.TAG_NAME
+                        }
+                    } 
+                }
                 stage('Retag images'){
-                    when { anyOf {branch 'qa' ; branch 'staging';} }
+                    when { anyOf {branch 'qa' ; branch 'staging'; } }
                     steps {
                         sh 'docker pull ' + image + ':develop'
                         sh 'docker image tag ' + image  + ':develop '+  image +':' + env.BRANCH_NAME
@@ -61,7 +69,7 @@ pipeline {
             when { branch 'master' }
             steps {
                 build job: 'CD ui pipeline', parameters: [
-                string(name: 'branch', value: env.BRANCH_NAME)
+                string(name: 'version', value: env.TAG_NAME)
                 ]
             }
         }
