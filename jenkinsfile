@@ -48,7 +48,7 @@ pipeline {
             when { branch 'develop' }
             steps {
                 script{
-                    sh 'docker run --name test_container_ui --entrypoint /bin/sh ' + image + ':develop -c "ls"'
+                    sh 'docker run --name test_container_ui --entrypoint /bin/sh ' + image + ':develop -c "npm test"'
                     sh 'docker rm test_container_ui'
                 } 
             }
