@@ -29,9 +29,9 @@ jobs:
         run: npm ci
       - run: npm run build --if-present
       - run: npm test
-      
+
   build:
-    needs: test
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Build docker image
