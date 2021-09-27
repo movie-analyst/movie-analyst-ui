@@ -1,25 +1,35 @@
-
-name: CI
+name:  movie-analyst-ui-CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
-
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
 
+  setup:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+      
+  test:
+    runs-on: ubuntu-latest    
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 15.x]
+    steps:
+      - name: Use Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build docker image
+        run: ls
+  
