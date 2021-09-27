@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       
   test:
+    needs: setup
     runs-on: ubuntu-latest    
     strategy:
       matrix:
@@ -28,7 +29,9 @@ jobs:
         run: npm ci
       - run: npm run build --if-present
       - run: npm test
+      
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Build docker image
