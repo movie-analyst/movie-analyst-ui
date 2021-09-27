@@ -1,5 +1,10 @@
 name:  movie-analyst-ui-CI
 
+env:
+  IMAGE_NAME: ${{ github.repository }}
+  TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+
 on:
   push:
     branches:    
@@ -15,13 +20,6 @@ on:
       - 'release/**'
 
   workflow_dispatch:
-
-  env:
-  IMAGE_NAME: ${{ github.repository }}
-  TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-
-
 
 jobs:
       
