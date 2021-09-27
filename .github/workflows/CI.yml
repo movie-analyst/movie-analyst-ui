@@ -5,6 +5,8 @@ on:
     branches:
       - 'feature/**'
       - 'hotfix/**'
+    tags:
+      - v1.*
   workflow_dispatch:
 
 env:
