@@ -3,20 +3,19 @@ name:  movie-analyst-ui-CI
 on:
   push:
     branches:
-      - 'feature/**'
-      - 'hotfix/**'
+      - develop
+      - qa
+      - staging
+      - master
     tags:
       - v1.*
-    pull_request:
-      branches:
-        - master
-        - qa
-        - staging
-        - 'release/**'
+  pull_request:
+    branches:
+      - develop
+      - master
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ${{ github.repository }}
   TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
@@ -39,12 +38,17 @@ jobs:
       - run: npm test
 
   build-and-push:
+    needs: test
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
       -
         name: Checkout
         uses: actions/checkout@v2
+      -
+        name: Set outputs
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -56,7 +60,7 @@ jobs:
         uses: docker/login-action@v1 
         with:
           username: ${{ env.USERNAME }}
-          password: ${{ env.DOCKERHUB_TOKEN }}
+          password: ${{ env.TOKEN }}
       -
         name: Build and push develop
         if: github.ref == 'refs/heads/develop'
@@ -64,7 +68,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: juancastaneda20/${{ env.IMAGE_NAME }}:develop
+          tags: juancastaneda20/movie-analyst-ui:develop
       -
         name: Build and push master
         if: github.ref == 'refs/heads/master'
@@ -72,11 +76,11 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: juancastaneda20/${{ env.IMAGE_NAME }}:latest,juancastaneda20/${{ env.IMAGE_NAME }}:latest 
+          tags: juancastaneda20/movie-analyst-ui:latest,juancastaneda20/movie-analyst-ui:${{ steps.vars.outputs.sha_short }}
       -
         name: Retag images and push
         if: github.ref == 'refs/heads/qa' || github.ref == 'refs/heads/staging'
         uses: akhilerm/tag-push-action@v1.0.0
         with:
-          src: juancastaneda20/${{ env.IMAGE_NAME }}:develop
-          dst: juancastaneda20/${{ env.IMAGE_NAME }}:qa
+          src: juancastaneda20/movie-analyst-ui:develop
+          dst: juancastaneda20/movie-analyst-ui:qa
