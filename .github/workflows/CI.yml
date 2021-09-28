@@ -110,7 +110,7 @@ jobs:
         uses: Azure/k8s-deploy@v1.4
         with:
           manifests: |
-            movie-analyst-kubernetes/movie-analyst-ui.yaml
+            movie-analyst-ui.yaml
           images: 'juancastaneda20/movie-analyst-ui:latest'
           kubectl-version: 'latest'
           
