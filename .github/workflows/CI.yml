@@ -12,6 +12,7 @@ on:
         - master
         - qa
         - staging
+        - develop
         - 'release/**'
   workflow_dispatch:
 
