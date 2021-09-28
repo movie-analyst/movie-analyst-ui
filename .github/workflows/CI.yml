@@ -3,17 +3,16 @@ name:  movie-analyst-ui-CI
 on:
   push:
     branches:
-      - 'feature/**'
-      - 'hotfix/**'
+      - develop
+      - qa
+      - staging
+      - master
     tags:
       - v1.*
   pull_request:
     branches:
-      - master
-      - qa
-      - staging
       - develop
-      - 'release/**'
+      - master
   workflow_dispatch:
 
 env:
