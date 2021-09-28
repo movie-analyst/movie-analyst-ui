@@ -7,13 +7,13 @@ on:
       - 'hotfix/**'
     tags:
       - v1.*
-    pull_request:
-      branches:
-        - master
-        - qa
-        - staging
-        - develop
-        - 'release/**'
+  pull_request:
+    branches:
+      - master
+      - qa
+      - staging
+      - develop
+      - 'release/**'
   workflow_dispatch:
 
 env:
