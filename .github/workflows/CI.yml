@@ -18,6 +18,7 @@ on:
 env:
   TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  CONFIG: ${{ secrets.KUBECONFIG }}
 
 jobs:
       
@@ -84,3 +85,32 @@ jobs:
         with:
           src: juancastaneda20/movie-analyst-ui:develop
           dst: juancastaneda20/movie-analyst-ui:qa
+
+  deploy:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: SetUp k8s cluster
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ env.CONFIG }}
+        id: setcontext
+      -
+        name: Check out repo
+        uses: actions/checkout@v2
+        with:
+          repository: 'movie-analyst/movie-analyst-kubernetes'      
+      -
+        name: View directories
+        run: ls
+      -
+        uses: Azure/k8s-deploy@v1.4
+        with:
+          manifests: |
+            movie-analyst-kubernetes/movie-analyst-ui.yaml
+          images: 'juancastaneda20/movie-analyst-ui:latest'
+          kubectl-version: 'latest'
+          
