@@ -16,7 +16,6 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ${{ github.repository }}
   TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
@@ -64,7 +63,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: juancastaneda20/${{ env.IMAGE_NAME }}:develop
+          tags: juancastaneda20/movie-analyst-ui:develop
       -
         name: Build and push master
         if: github.ref == 'refs/heads/master'
@@ -72,11 +71,11 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: juancastaneda20/${{ env.IMAGE_NAME }}:latest,juancastaneda20/${{ env.IMAGE_NAME }}:latest 
+          tags: juancastaneda20/movie-analyst-ui:latest,juancastaneda20/movie-analyst-ui:latest 
       -
         name: Retag images and push
         if: github.ref == 'refs/heads/qa' || github.ref == 'refs/heads/staging'
         uses: akhilerm/tag-push-action@v1.0.0
         with:
-          src: juancastaneda20/${{ env.IMAGE_NAME }}:develop
-          dst: juancastaneda20/${{ env.IMAGE_NAME }}:qa
+          src: juancastaneda20/movie-analyst-ui:develop
+          dst: juancastaneda20/movie-analyst-ui:qa
