@@ -92,10 +92,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
-        name: Set outputs
-        id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-      -
         name: SetUp k8s cluster
         uses: azure/k8s-set-context@v1
         with:
@@ -115,6 +111,6 @@ jobs:
         with:
           manifests: |
             movie-analyst-ui.yaml
-          images: 'juancastaneda20/movie-analyst-ui:${{ steps.vars.outputs.sha_short }}'
+          images: 'juancastaneda20/movie-analyst-ui:latest'
           kubectl-version: 'latest'
           
