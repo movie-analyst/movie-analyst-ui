@@ -92,6 +92,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Set outputs
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      -
         name: SetUp k8s cluster
         uses: azure/k8s-set-context@v1
         with:
