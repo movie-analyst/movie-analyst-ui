@@ -111,6 +111,6 @@ jobs:
         with:
           manifests: |
             movie-analyst-ui.yaml
-          images: 'juancastaneda20/movie-analyst-ui:latest'
+          images: 'juancastaneda20/movie-analyst-ui:${{ steps.vars.outputs.sha_short }}'
           kubectl-version: 'latest'
           
