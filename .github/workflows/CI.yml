@@ -113,3 +113,4 @@ jobs:
             movie-analyst-kubernetes/movie-analyst-ui.yaml
           images: 'juancastaneda20/movie-analyst-ui:latest'
           kubectl-version: 'latest'
+          
