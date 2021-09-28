@@ -85,6 +85,8 @@ jobs:
         with:
           src: juancastaneda20/movie-analyst-ui:develop
           dst: juancastaneda20/movie-analyst-ui:qa
+    outputs:
+      image-tag: ${{ steps.vars.outputs.sha_short }}
 
   deploy:
     needs: build-and-push
@@ -111,6 +113,6 @@ jobs:
         with:
           manifests: |
             movie-analyst-ui.yaml
-          images: 'juancastaneda20/movie-analyst-ui:latest'
+          images: 'juancastaneda20/movie-analyst-ui:${{ needs.build-and-push.outputs.image-tag }}'
           kubectl-version: 'latest'
           
